@@ -8,7 +8,9 @@
 
 PulseBoard is an AI-powered Product & Business Analytics Intelligence Dashboard for SaaS metrics. It generates realistic product telemetry, runs forecasting and anomaly detection pipelines, explains churn drivers with SHAP, and turns weekly KPI movement into executive-ready narratives with Claude.
 
-![PulseBoard demo GIF placeholder](docs/pulseboard-demo.gif)
+> Demo GIF placeholder: add a short screen recording of the Streamlit dashboard at `docs/pulseboard-demo.gif` after deployment.
+
+Repository: [github.com/Robertcurzon/PulseBoard](https://github.com/Robertcurzon/PulseBoard)
 
 ## What It Shows
 
@@ -127,3 +129,7 @@ Configuration is centralized in `config/settings.py` and can be overridden throu
 ## Portfolio Notes
 
 PulseBoard is intentionally designed as a senior DS/AI portfolio project: it demonstrates realistic metric simulation, production-shaped ML components, async LLM integration, testability, and a polished analytics UX without relying on proprietary data.
+
+## License
+
+MIT License. See `LICENSE`.
