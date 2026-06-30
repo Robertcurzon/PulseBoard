@@ -21,6 +21,7 @@ from dashboard.components.insight_feed import render_insight_feed
 from dashboard.components.kpi_cards import render_kpi_cards
 from dashboard.components.operating_views import (
     render_acquisition_funnel,
+    render_data_preview,
     render_event_log,
     render_feature_adoption,
     render_filter_chips,
@@ -146,6 +147,7 @@ def main() -> None:
     if uploaded_data:
         st.info("Running on uploaded CSV data. Missing optional fields are derived where possible.")
     render_filter_chips(selected_segments, selected_regions, selected_channels)
+    render_data_preview(selected_segment_metrics, data_source)
     render_kpi_cards(daily_metrics)
 
     left, right = st.columns([2, 1])

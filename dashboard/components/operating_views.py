@@ -8,6 +8,38 @@ import plotly.graph_objects as go
 import streamlit as st
 
 
+PREVIEW_COLUMNS = [
+    "date",
+    "segment",
+    "region",
+    "acquisition_channel",
+    "dau",
+    "new_signups",
+    "mrr",
+    "churn_rate",
+    "nps",
+    "pipeline_created",
+    "trial_to_paid_rate",
+    "net_revenue_retention",
+    "injected_anomaly",
+]
+
+
+def render_data_preview(segment_metrics: pd.DataFrame, source_label: str) -> None:
+    """Render a collapsible preview of the active data feeding the dashboard."""
+
+    preview_columns = [column for column in PREVIEW_COLUMNS if column in segment_metrics.columns]
+    preview = segment_metrics.sort_values("date").head(5)[preview_columns].copy()
+    if "date" in preview:
+        preview["date"] = pd.to_datetime(preview["date"]).dt.strftime("%Y-%m-%d")
+
+    with st.expander("View data sample: first 5 active rows", expanded=False):
+        st.caption(
+            f"Source: {source_label}. This is the filtered segment-level data used to aggregate the KPI cards, charts, forecasts, and agent analysis."
+        )
+        st.dataframe(preview, width="stretch", hide_index=True)
+
+
 def render_filter_chips(segments: list[str], regions: list[str], channels: list[str]) -> None:
     """Render compact active-filter chips for demo context."""
 

@@ -18,7 +18,7 @@ Repository: [github.com/Robertcurzon/PulseBoard](https://github.com/Robertcurzon
 - Filterable mock operating dataset across customer segments, regions, and acquisition channels so the dashboard can be used live in a portfolio walkthrough.
 - ML pipeline with feature engineering, churn prediction, Isolation Forest anomaly detection, Prophet-first forecasting with a statsmodels fallback, and SHAP feature attribution.
 - LLM insight generation using the Anthropic Python SDK with graceful offline placeholders when `ANTHROPIC_API_KEY` is not configured.
-- Streamlit dashboard with dark executive styling, KPI cards, forecast overlays, segment mix, acquisition funnel, pipeline quality, feature adoption, anomaly narratives, cohort heatmaps, CSV upload, an AI analyst agent, and weekly insight feed.
+- Streamlit dashboard with dark executive styling, collapsible data preview, KPI cards, forecast overlays, segment mix, acquisition funnel, pipeline quality, feature adoption, anomaly narratives, cohort heatmaps, CSV upload, an AI analyst agent, and weekly insight feed.
 
 ## Architecture
 
