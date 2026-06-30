@@ -6,7 +6,7 @@
 [![Plotly](https://img.shields.io/badge/Plotly-visualization-3F4F75?logo=plotly&logoColor=white)](https://plotly.com/python/)
 [![Claude](https://img.shields.io/badge/Claude-executive%20insights-191919)](https://www.anthropic.com/)
 
-PulseBoard Intelligence Studio is an AI-powered product and business analytics dashboard for turning SaaS operating metrics into clearer decisions. It works with either built-in synthetic data or uploaded CSV files, then layers forecasting, anomaly detection, churn-driver explanation, and AI-generated analysis on top of the data.
+PulseBoard Intelligence Studio is an AI-powered product and business analytics dashboard for turning SaaS operating metrics into clearer decisions. It works with either built-in synthetic data or uploaded CSV files, then layers forecasting, anomaly detection, churn-driver explanation, and AI-generated analysis on top of the data. It can be used as a ready-made dashboard for quick, in-depth analysis of product and revenue data, or as a flexible starting point for teams building their own analytics intelligence workflow.
 
 ![PulseBoard dashboard screenshot](docs/pulseboard-screenshot.png)
 
