@@ -41,10 +41,11 @@ def configure_page() -> None:
         }
         .stApp { background: var(--pb-bg); color: var(--pb-text); }
         [data-testid="stSidebar"] { background: #0e1628; border-right: 1px solid var(--pb-border); }
-        .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
+        .block-container { padding-top: 4rem; padding-bottom: 2rem; }
         h1, h2, h3 { letter-spacing: 0; }
-        .pb-title { font-size: 2.1rem; font-weight: 760; margin-bottom: 0.15rem; }
-        .pb-subtitle { color: var(--pb-muted); font-size: 1rem; margin-bottom: 1.25rem; }
+        .pb-header { margin-top: 0.75rem; margin-bottom: 1.35rem; }
+        .pb-title { font-size: 2.35rem; font-weight: 780; line-height: 1.15; margin-bottom: 0.35rem; }
+        .pb-subtitle { color: var(--pb-muted); font-size: 1.02rem; max-width: 820px; }
         .pb-card {
             background: linear-gradient(180deg, #151e35 0%, #11192c 100%);
             border: 1px solid var(--pb-border);
@@ -94,9 +95,13 @@ def configure_page() -> None:
 def render_header() -> None:
     """Render the dashboard title area."""
 
-    st.markdown('<div class="pb-title">PulseBoard</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="pb-subtitle">AI-powered product and business analytics intelligence for SaaS operating reviews.</div>',
+        """
+        <div class="pb-header">
+            <div class="pb-title">PulseBoard Intelligence Studio</div>
+            <div class="pb-subtitle">Transform product, revenue, and customer-health metrics into forecasts, anomaly narratives, and AI-assisted operating decisions.</div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
