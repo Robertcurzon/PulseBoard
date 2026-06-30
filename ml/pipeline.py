@@ -109,6 +109,12 @@ def weekly_kpi_summary(metrics: pd.DataFrame) -> dict[str, object]:
         "feature_a_adoption": round(float(current["feature_a_adoption"].mean()), 4),
         "feature_b_adoption": round(float(current["feature_b_adoption"].mean()), 4),
         "retention_d30": round(float(current["retention_d30"].mean()), 4),
+        "trial_to_paid_rate": round(float(current.get("trial_to_paid_rate", pd.Series([0.0])).mean()), 4),
+        "net_revenue_retention": round(float(current.get("net_revenue_retention", pd.Series([1.0])).mean()), 4),
+        "pipeline_created": round(float(current.get("pipeline_created", pd.Series([0.0])).sum()), 2),
+        "pipeline_won": round(float(current.get("pipeline_won", pd.Series([0.0])).sum()), 2),
+        "expansion_mrr": round(float(current.get("expansion_mrr", pd.Series([0.0])).sum()), 2),
+        "revenue_at_risk": round(float(current.get("revenue_at_risk", pd.Series([0.0])).mean()), 2),
     }
 
 

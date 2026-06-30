@@ -17,12 +17,15 @@ def offline_executive_insight(summary: dict[str, Any]) -> str:
     dau_wow = float(summary.get("dau_wow", 0.0))
     churn_wow = float(summary.get("churn_wow", 0.0))
     nps_wow = float(summary.get("nps_wow", 0.0))
+    nrr = float(summary.get("net_revenue_retention", 1.0))
+    trial_to_paid = float(summary.get("trial_to_paid_rate", 0.0))
+    pipeline = float(summary.get("pipeline_created", 0.0))
 
     return "\n".join(
         [
-            f"- MRR averaged ${summary.get('mrr', 0):,.0f} this week ({mrr_wow:+.1%} WoW); prioritize expansion motions where adoption is strongest.",
-            f"- DAU averaged {summary.get('dau', 0):,.0f} users ({dau_wow:+.1%} WoW); inspect activation and feature release cohorts for repeatable lift.",
-            f"- Churn averaged {float(summary.get('churn_rate', 0)):.2%} ({churn_wow:+.1%} WoW) while NPS moved {nps_wow:+.1%}; route at-risk segments to customer success.",
+            f"- MRR averaged ${summary.get('mrr', 0):,.0f} this week ({mrr_wow:+.1%} WoW) with NRR at {nrr:.1%}; prioritize expansion motions where adoption is strongest.",
+            f"- DAU averaged {summary.get('dau', 0):,.0f} users ({dau_wow:+.1%} WoW) and trial-to-paid ran {trial_to_paid:.1%}; inspect activation cohorts by channel for repeatable lift.",
+            f"- Churn averaged {float(summary.get('churn_rate', 0)):.2%} ({churn_wow:+.1%} WoW), NPS moved {nps_wow:+.1%}, and pipeline created was ${pipeline:,.0f}; route at-risk segments to customer success.",
         ]
     )
 

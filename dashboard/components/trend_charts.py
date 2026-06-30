@@ -9,7 +9,7 @@ import streamlit as st
 from ml.forecaster import ForecastResult
 
 
-def render_trend_chart(metrics: pd.DataFrame, forecast_result: ForecastResult, metric: str) -> None:
+def render_trend_chart(metrics: pd.DataFrame, forecast_result: ForecastResult, metric: str, events: pd.DataFrame | None = None) -> None:
     """Render a KPI trend chart with forecast and confidence interval."""
 
     label = metric.replace("_", " ").upper()
@@ -54,6 +54,19 @@ def render_trend_chart(metrics: pd.DataFrame, forecast_result: ForecastResult, m
             line=dict(color="#f2cc60", width=2.5, dash="dash"),
         )
     )
+    if events is not None and not events.empty:
+        y_max = float(max(metrics[metric].max(), forecast["yhat_upper"].max()))
+        for _, event in events.iterrows():
+            fig.add_vline(x=event["date"], line_width=1, line_dash="dot", line_color="#f2cc60", opacity=0.55)
+            fig.add_annotation(
+                x=event["date"],
+                y=y_max,
+                text=str(event["event"]),
+                showarrow=False,
+                yanchor="bottom",
+                textangle=-90,
+                font=dict(size=10, color="#f2cc60"),
+            )
     fig.update_layout(
         height=430,
         template="plotly_dark",

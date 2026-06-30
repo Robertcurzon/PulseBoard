@@ -14,16 +14,19 @@ Repository: [github.com/Robertcurzon/PulseBoard](https://github.com/Robertcurzon
 
 ## What It Shows
 
-- Synthetic SaaS data with 12 months of daily DAU, MAU, signups, churn, ARPU, MRR, feature adoption, NPS, A/B variants, retention cohorts, and injected KPI anomalies.
+- Synthetic SaaS data with 12 months of daily DAU, MAU, signups, churn, ARPU, MRR, feature adoption, NPS, A/B variants, retention cohorts, injected KPI anomalies, and annotated business events.
+- Filterable mock operating dataset across customer segments, regions, and acquisition channels so the dashboard can be used live in a portfolio walkthrough.
 - ML pipeline with feature engineering, churn prediction, Isolation Forest anomaly detection, Prophet-first forecasting with a statsmodels fallback, and SHAP feature attribution.
 - LLM insight generation using the Anthropic Python SDK with graceful offline placeholders when `ANTHROPIC_API_KEY` is not configured.
-- Streamlit dashboard with dark executive styling, KPI cards, forecast overlays, anomaly narratives, cohort heatmaps, and weekly insight feed.
+- Streamlit dashboard with dark executive styling, KPI cards, forecast overlays, segment mix, acquisition funnel, pipeline quality, feature adoption, anomaly narratives, cohort heatmaps, and weekly insight feed.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A["Synthetic SaaS Metrics"] --> B["Feature Engineering"]
+    A --> S["Segment / Region / Channel Slices"]
+    S --> M
     B --> C["Churn Model"]
     B --> D["Isolation Forest"]
     B --> E["DAU/MRR Forecaster"]
@@ -125,6 +128,15 @@ Configuration is centralized in `config/settings.py` and can be overridden throu
 - `PULSEBOARD_HISTORY_DAYS`
 - `PULSEBOARD_FORECAST_HORIZON_DAYS`
 - `PULSEBOARD_ANOMALY_CONTAMINATION`
+
+## Demo Storyline
+
+The default mock company behaves like a real B2B SaaS business:
+
+- **Enterprise, Mid-Market, and Startup** customers have different ARPU, churn, adoption, and NPS profiles.
+- **North America, EMEA, and APAC** add regional growth and pricing variation.
+- **Product-Led, Paid Search, and Partner** channels expose different funnel economics.
+- Annotated events such as pricing tests, AI Copilot beta, partner launch, billing incident, and win-back motion create useful moments for anomaly detection, forecasting, and executive narrative generation.
 
 ## Portfolio Notes
 

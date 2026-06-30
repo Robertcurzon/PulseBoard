@@ -20,6 +20,11 @@ DEFAULT_KPI_COLUMNS = [
     "churn_rate",
     "arpu",
     "mrr",
+    "pipeline_created",
+    "pipeline_won",
+    "trial_to_paid_rate",
+    "net_revenue_retention",
+    "revenue_at_risk",
     "feature_a_adoption",
     "feature_b_adoption",
     "nps",
@@ -84,7 +89,8 @@ class AnomalyDetector:
         """Convert flagged anomalies into LLM-ready record dictionaries."""
 
         anomalies = scored_metrics.loc[scored_metrics["is_anomaly"]].copy()
-        anomalies = anomalies.sort_values("anomaly_score").head(limit)
+        anomalies["_has_business_event"] = anomalies["injected_anomaly"].fillna("").astype(str).str.len() > 0
+        anomalies = anomalies.sort_values(["_has_business_event", "anomaly_score"], ascending=[False, True]).head(limit)
         records: list[dict[str, object]] = []
         for _, row in anomalies.iterrows():
             metric = str(row["primary_anomaly_metric"])
@@ -99,6 +105,9 @@ class AnomalyDetector:
                         "dau": int(row["dau"]),
                         "mrr": round(float(row["mrr"]), 2),
                         "churn_rate": round(float(row["churn_rate"]), 4),
+                        "trial_to_paid_rate": round(float(row.get("trial_to_paid_rate", 0.0)), 4),
+                        "net_revenue_retention": round(float(row.get("net_revenue_retention", 1.0)), 4),
+                        "pipeline_created": round(float(row.get("pipeline_created", 0.0)), 2),
                         "nps": round(float(row["nps"]), 1),
                         "injected_label": str(row.get("injected_anomaly", "")),
                     },

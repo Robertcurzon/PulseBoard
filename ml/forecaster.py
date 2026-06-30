@@ -6,15 +6,11 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import tempfile
-from typing import Literal
-
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 from config.settings import Settings, get_settings
-
-ForecastMetric = Literal["dau", "mrr"]
 
 
 @dataclass
@@ -33,7 +29,7 @@ class ProphetForecaster:
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
 
-    def forecast(self, metrics: pd.DataFrame, metric: ForecastMetric, horizon_days: int | None = None) -> ForecastResult:
+    def forecast(self, metrics: pd.DataFrame, metric: str, horizon_days: int | None = None) -> ForecastResult:
         """Forecast a KPI for the configured horizon."""
 
         horizon_days = horizon_days or self.settings.forecast_horizon_days

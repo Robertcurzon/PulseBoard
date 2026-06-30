@@ -13,8 +13,11 @@ METRIC_OPTIONS = {
     "MRR": "mrr",
     "Churn Rate": "churn_rate",
     "NPS": "nps",
+    "Trial-to-Paid": "trial_to_paid_rate",
+    "Net Revenue Retention": "net_revenue_retention",
     "Feature A Adoption": "feature_a_adoption",
     "Feature B Adoption": "feature_b_adoption",
+    "Pipeline Created": "pipeline_created",
 }
 
 
@@ -53,17 +56,35 @@ def configure_page() -> None:
         .pb-card-value { color: var(--pb-text); font-size: 1.75rem; font-weight: 760; margin-top: 0.25rem; }
         .pb-card-delta-positive { color: var(--pb-green); font-size: 0.9rem; font-weight: 700; }
         .pb-card-delta-negative { color: var(--pb-red); font-size: 0.9rem; font-weight: 700; }
+        .pb-chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .pb-chip {
+            border: 1px solid var(--pb-border);
+            border-radius: 999px;
+            padding: 0.25rem 0.65rem;
+            color: var(--pb-muted);
+            background: #0f1729;
+            font-size: 0.8rem;
+            font-weight: 650;
+        }
         .pb-panel {
             background: #11192c;
             border: 1px solid var(--pb-border);
             border-radius: 8px;
             padding: 0.85rem;
         }
+        .pb-panel + .pb-panel { margin-top: 0.65rem; }
         .pb-feed {
-            max-height: 360px;
+            max-height: 430px;
             overflow-y: auto;
             padding-right: 0.35rem;
         }
+        .pb-event {
+            border-left: 3px solid var(--pb-gold);
+            padding: 0.45rem 0 0.45rem 0.75rem;
+            margin-bottom: 0.55rem;
+            color: var(--pb-muted);
+        }
+        .pb-event strong { color: var(--pb-text); }
         </style>
         """,
         unsafe_allow_html=True,
@@ -80,7 +101,7 @@ def render_header() -> None:
     )
 
 
-def sidebar_filters(metrics: pd.DataFrame) -> tuple[tuple[date, date], str, float]:
+def sidebar_filters(metrics: pd.DataFrame, segment_metrics: pd.DataFrame) -> tuple[tuple[date, date], str, float, list[str], list[str], list[str]]:
     """Render sidebar controls and return selected filters."""
 
     min_date = pd.Timestamp(metrics["date"].min()).date()
@@ -89,6 +110,14 @@ def sidebar_filters(metrics: pd.DataFrame) -> tuple[tuple[date, date], str, floa
     selected_range = st.sidebar.date_input("Date range", value=(min_date, max_date), min_value=min_date, max_value=max_date)
     metric_label = st.sidebar.selectbox("Trend metric", list(METRIC_OPTIONS.keys()), index=0)
     sensitivity = st.sidebar.slider("Anomaly sensitivity", min_value=0.01, max_value=0.12, value=0.035, step=0.005)
+    st.sidebar.divider()
+    st.sidebar.subheader("Demo Slices")
+    segments = sorted(segment_metrics["segment"].unique())
+    regions = sorted(segment_metrics["region"].unique())
+    channels = sorted(segment_metrics["acquisition_channel"].unique())
+    selected_segments = st.sidebar.multiselect("Customer segments", segments, default=segments)
+    selected_regions = st.sidebar.multiselect("Regions", regions, default=regions)
+    selected_channels = st.sidebar.multiselect("Acquisition channels", channels, default=channels)
     if not isinstance(selected_range, tuple) or len(selected_range) != 2:
         selected_range = (min_date, max_date)
-    return selected_range, METRIC_OPTIONS[metric_label], float(sensitivity)
+    return selected_range, METRIC_OPTIONS[metric_label], float(sensitivity), selected_segments, selected_regions, selected_channels
