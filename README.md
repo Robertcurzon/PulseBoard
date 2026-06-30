@@ -24,12 +24,14 @@ Repository: [github.com/Robertcurzon/PulseBoard](https://github.com/Robertcurzon
 
 ```mermaid
 flowchart LR
-    A["Synthetic SaaS Metrics"] --> B["Feature Engineering"]
-    A --> S["Segment / Region / Channel Slices"]
+    A["Synthetic SaaS Dataset"] --> V["Schema Validation & Normalization"]
+    U["Uploaded CSV Data"] --> V
+    V --> B["Feature Engineering"]
+    V --> S["Segment / Region / Channel Slices"]
     S --> M
     B --> C["Churn Model"]
     B --> D["Isolation Forest"]
-    B --> E["DAU/MRR Forecaster"]
+    B --> E["KPI Forecaster"]
     C --> F["SHAP Explainer"]
     D --> G["Anomaly Records"]
     E --> H["Forecast Frames"]
@@ -41,6 +43,16 @@ flowchart LR
     I --> M
     J --> M
     L --> M
+
+    classDef source fill:#172033,stroke:#58a6ff,color:#e6edf8
+    classDef ml fill:#13291f,stroke:#2fd17c,color:#e6edf8
+    classDef ai fill:#2a2133,stroke:#d8a8ff,color:#e6edf8
+    classDef app fill:#2b2414,stroke:#f2cc60,color:#e6edf8
+
+    class A,U,V,S source
+    class B,C,D,E,F,G,H,I ml
+    class J,K,L ai
+    class M app
 ```
 
 ## Quickstart
@@ -78,27 +90,43 @@ streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0
 
 Use the sidebar's **Data Source** control and choose **Upload CSV**. PulseBoard will validate the file, derive missing optional metrics where possible, and rerun the dashboard, anomaly detection, forecasting, operating charts, and AI analyst agent on the uploaded data.
 
-Minimum CSV requirements:
+### Compatible CSV Format
+
+Minimum required columns:
 
 - `date`
 - At least one of `dau`, `mrr`, `new_signups`, `churn_rate`, or `nps`
 
-Recommended dimensions:
+Recommended dimensions for richer filtering:
 
 - `segment`
 - `region`
 - `acquisition_channel`
 
-Recommended operating metrics:
+Recommended KPI and operating columns:
 
+- `dau`, `mau`, `new_signups`, `mrr`, `arpu`, `churn_rate`, `nps`
 - `activated_users`, `paid_conversions`, `paid_accounts`, `churned_accounts`
 - `pipeline_created`, `pipeline_won`
 - `expansion_mrr`, `contraction_mrr`
 - `activation_rate`, `trial_to_paid_rate`, `net_revenue_retention`
-- `feature_a_adoption`, `feature_b_adoption`
+- `feature_a_adoption`, `feature_b_adoption`, `retention_d7`, `retention_d30`
 - `event`, `event_category`, `event_description`
 
-See [docs/data_format.md](docs/data_format.md) and [data/sample_upload.csv](data/sample_upload.csv).
+Useful aliases are accepted. For example, `channel` maps to `acquisition_channel`, `revenue` maps to `mrr`, `active_users` maps to `dau`, `signups` maps to `new_signups`, and `nrr` maps to `net_revenue_retention`.
+
+Rates should be decimals, such as `0.041` for 4.1%. If optional fields are missing, PulseBoard derives practical defaults where possible so the dashboard still runs. For best results, upload daily data with at least 45 rows.
+
+Example:
+
+```csv
+date,segment,region,acquisition_channel,dau,new_signups,mrr,churn_rate,nps,pipeline_created,event
+2026-01-01,Enterprise,North America,Partner,4200,180,710000,0.018,58,220000,
+2026-01-02,Enterprise,North America,Partner,4350,191,719500,0.017,59,230000,
+2026-01-03,Mid-Market,EMEA,Product-Led,3100,240,285000,0.031,48,97000,Product launch
+```
+
+See the full guide in [docs/data_format.md](docs/data_format.md) and the sample file at [data/sample_upload.csv](data/sample_upload.csv).
 
 ## Agentic Features
 
