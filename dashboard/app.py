@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config.settings import get_settings
+from dashboard.components.agent_panel import render_agent_panel
 from dashboard.components.anomaly_panel import render_anomaly_panel
 from dashboard.components.cohort_heatmap import render_cohort_heatmap
 from dashboard.components.insight_feed import render_insight_feed
@@ -28,6 +30,7 @@ from dashboard.components.operating_views import (
 from dashboard.components.trend_charts import render_trend_chart
 from dashboard.layout import configure_page, render_header, sidebar_filters
 from data.generators.synthetic_data import aggregate_segment_metrics
+from data.ingestion.csv_loader import UploadedDataset, load_uploaded_csv
 from ml.anomaly_detector import AnomalyDetector
 from ml.forecaster import ProphetForecaster
 from ml.pipeline import run_ml_pipeline
@@ -49,6 +52,13 @@ def cached_pipeline(sensitivity: float) -> dict[str, object]:
         "feature_importance": result.feature_importance,
         "churn_auc": result.churn_auc,
     }
+
+
+@st.cache_data(show_spinner=False)
+def cached_upload(file_bytes: bytes) -> UploadedDataset:
+    """Parse and cache an uploaded CSV by content hash."""
+
+    return load_uploaded_csv(BytesIO(file_bytes))
 
 
 def filter_by_date(metrics: pd.DataFrame, date_range: tuple[object, object]) -> pd.DataFrame:
@@ -80,14 +90,37 @@ def main() -> None:
     configure_page()
     settings = get_settings()
     bootstrap = cached_pipeline(settings.anomaly_contamination)
+    st.sidebar.header("Data Source")
+    data_source = st.sidebar.radio("Choose dataset", ["Showcase mock data", "Upload CSV"], horizontal=False)
+    uploaded_data: UploadedDataset | None = None
+    if data_source == "Upload CSV":
+        uploaded_file = st.sidebar.file_uploader("CSV file", type=["csv"])
+        with st.sidebar.expander("CSV format"):
+            st.markdown(
+                "Required: `date` plus at least one KPI such as `dau`, `mrr`, `new_signups`, `churn_rate`, or `nps`. "
+                "Optional: `segment`, `region`, `acquisition_channel`, funnel, revenue, event, and feature adoption columns. "
+                "See `docs/data_format.md` in the repo."
+            )
+        if uploaded_file is not None:
+            try:
+                uploaded_data = cached_upload(uploaded_file.getvalue())
+                st.sidebar.success("CSV loaded")
+                for message in uploaded_data.validation_messages[:4]:
+                    st.sidebar.caption(message)
+            except Exception as exc:
+                st.sidebar.error(f"Could not load CSV: {exc}")
+
+    active_daily = uploaded_data.daily_metrics if uploaded_data else bootstrap["daily_metrics"]
+    active_segments = uploaded_data.segment_metrics if uploaded_data else bootstrap["segment_metrics"]
     date_range, selected_metric, sensitivity, selected_segments, selected_regions, selected_channels = sidebar_filters(
-        bootstrap["daily_metrics"],
-        bootstrap["segment_metrics"],
+        active_daily,
+        active_segments,
     )
     data = cached_pipeline(sensitivity)
+    event_log = uploaded_data.event_log if uploaded_data else data["event_log"]
 
     selected_segment_metrics_all_dates = filter_segments(
-        data["segment_metrics"],
+        active_segments,
         selected_segments,
         selected_regions,
         selected_channels,
@@ -95,13 +128,23 @@ def main() -> None:
     daily_all_dates = aggregate_segment_metrics(selected_segment_metrics_all_dates)
     daily_metrics = filter_by_date(daily_all_dates, date_range)
     selected_segment_metrics = filter_by_date(selected_segment_metrics_all_dates, date_range)
-    events = filter_by_date(data["event_log"], date_range)
-    detector = AnomalyDetector(settings)
-    detector.fit(daily_all_dates)
-    scored_metrics = detector.predict(daily_metrics, sensitivity=sensitivity)
+    events = filter_by_date(event_log, date_range)
+    if len(daily_all_dates) >= 8:
+        detector = AnomalyDetector(settings)
+        detector.fit(daily_all_dates)
+        scored_metrics = detector.predict(daily_metrics, sensitivity=sensitivity)
+    else:
+        detector = AnomalyDetector(settings)
+        scored_metrics = daily_metrics.copy()
+        scored_metrics["anomaly_score"] = 0.0
+        scored_metrics["is_anomaly"] = False
+        scored_metrics["anomaly_severity"] = 0.0
+        scored_metrics["primary_anomaly_metric"] = selected_metric
     forecast_result = ProphetForecaster(settings).forecast(daily_all_dates, selected_metric)
 
     render_header()
+    if uploaded_data:
+        st.info("Running on uploaded CSV data. Missing optional fields are derived where possible.")
     render_filter_chips(selected_segments, selected_regions, selected_channels)
     render_kpi_cards(daily_metrics)
 
@@ -134,6 +177,17 @@ def main() -> None:
     with col_b:
         render_event_log(events)
         render_cohort_heatmap(data["retention_cohorts"])
+
+    st.divider()
+    filters = {
+        "data_source": data_source,
+        "segments": selected_segments,
+        "regions": selected_regions,
+        "channels": selected_channels,
+        "date_range": [str(date_range[0]), str(date_range[1])],
+        "metric": selected_metric,
+    }
+    render_agent_panel(daily_metrics, selected_segment_metrics, scored_metrics, filters)
 
     st.divider()
     st.markdown("### Executive Insight Feed")

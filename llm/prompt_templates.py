@@ -37,6 +37,29 @@ $anomaly_json
 )
 
 
+# v1.0: Agentic analyst prompt that summarizes tool observations and recommends actions.
+ANALYST_AGENT_TEMPLATE = Template(
+    """You are PulseBoard's AI analyst agent. You receive the user's question plus tool observations from the current dashboard slice.
+
+Respond in markdown with:
+1. "Agent steps" as 2-4 concise bullets naming what you inspected.
+2. "Diagnosis" as 2-3 bullets grounded in the provided numbers.
+3. "Recommended actions" as 2-3 practical next steps.
+
+Avoid pretending to access data outside the supplied observations.
+
+Question:
+$question
+
+Current filters:
+$filters_json
+
+Tool observations:
+$observations_json
+"""
+)
+
+
 def render_executive_insight_prompt(summary: dict[str, Any]) -> str:
     """Render the executive insight prompt from a weekly KPI summary."""
 
@@ -47,3 +70,13 @@ def render_anomaly_narrative_prompt(anomaly: dict[str, Any]) -> str:
     """Render the anomaly narrative prompt from an anomaly record."""
 
     return ANOMALY_NARRATIVE_TEMPLATE.substitute(anomaly_json=json.dumps(anomaly, indent=2, sort_keys=True))
+
+
+def render_analyst_agent_prompt(question: str, filters: dict[str, Any], observations: dict[str, Any]) -> str:
+    """Render the agentic analyst prompt from current dashboard observations."""
+
+    return ANALYST_AGENT_TEMPLATE.substitute(
+        question=question,
+        filters_json=json.dumps(filters, indent=2, sort_keys=True),
+        observations_json=json.dumps(observations, indent=2, sort_keys=True),
+    )

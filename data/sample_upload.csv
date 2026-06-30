@@ -1,0 +1,9 @@
+date,segment,region,acquisition_channel,dau,new_signups,mrr,churn_rate,nps,pipeline_created,feature_a_adoption,event,event_category,event_description
+2026-01-01,Enterprise,North America,Partner,4200,180,710000,0.018,58,220000,,,,
+2026-01-02,Enterprise,North America,Partner,4350,191,719500,0.017,59,230000,,,,
+2026-01-03,Enterprise,North America,Partner,4280,184,721000,0.018,58,224000,,,,
+2026-01-04,Mid-Market,EMEA,Product-Led,3100,240,285000,0.031,48,97000,0.34,Product launch,Product,New workflow shipped to beta cohort.
+2026-01-05,Mid-Market,EMEA,Product-Led,3320,251,294000,0.03,50,102000,0.36,,,
+2026-01-06,Mid-Market,EMEA,Product-Led,3410,260,301500,0.029,51,104000,0.38,,,
+2026-01-07,Startup,APAC,Paid Search,2200,310,98000,0.061,39,44000,,,,
+2026-01-08,Startup,APAC,Paid Search,2130,295,94000,0.067,35,39000,,Spend pullback,Growth,CAC spike reduced paid acquisition quality.

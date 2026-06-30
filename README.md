@@ -18,7 +18,7 @@ Repository: [github.com/Robertcurzon/PulseBoard](https://github.com/Robertcurzon
 - Filterable mock operating dataset across customer segments, regions, and acquisition channels so the dashboard can be used live in a portfolio walkthrough.
 - ML pipeline with feature engineering, churn prediction, Isolation Forest anomaly detection, Prophet-first forecasting with a statsmodels fallback, and SHAP feature attribution.
 - LLM insight generation using the Anthropic Python SDK with graceful offline placeholders when `ANTHROPIC_API_KEY` is not configured.
-- Streamlit dashboard with dark executive styling, KPI cards, forecast overlays, segment mix, acquisition funnel, pipeline quality, feature adoption, anomaly narratives, cohort heatmaps, and weekly insight feed.
+- Streamlit dashboard with dark executive styling, KPI cards, forecast overlays, segment mix, acquisition funnel, pipeline quality, feature adoption, anomaly narratives, cohort heatmaps, CSV upload, an AI analyst agent, and weekly insight feed.
 
 ## Architecture
 
@@ -56,6 +56,59 @@ streamlit run dashboard/app.py
 
 Claude calls are optional. Without an API key, the app displays deterministic fallback summaries so the full dashboard remains runnable.
 
+## Share As A Web App
+
+PulseBoard is built for Streamlit hosting, so the easiest public demo path is:
+
+1. Fork or use this GitHub repo.
+2. Create a new app in Streamlit Community Cloud.
+3. Point it at this repository, branch `main`, and app path `dashboard/app.py`.
+4. Add `ANTHROPIC_API_KEY` as an app secret if you want live Claude narratives. Leave it unset for deterministic offline demo text.
+5. Share the generated Streamlit app URL with colleagues.
+
+The same repo also works on Render, Railway, Hugging Face Spaces, or any Python web host that can run:
+
+```bash
+streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0
+```
+
+## Upload Your Own CSV
+
+Use the sidebar's **Data Source** control and choose **Upload CSV**. PulseBoard will validate the file, derive missing optional metrics where possible, and rerun the dashboard, anomaly detection, forecasting, operating charts, and AI analyst agent on the uploaded data.
+
+Minimum CSV requirements:
+
+- `date`
+- At least one of `dau`, `mrr`, `new_signups`, `churn_rate`, or `nps`
+
+Recommended dimensions:
+
+- `segment`
+- `region`
+- `acquisition_channel`
+
+Recommended operating metrics:
+
+- `activated_users`, `paid_conversions`, `paid_accounts`, `churned_accounts`
+- `pipeline_created`, `pipeline_won`
+- `expansion_mrr`, `contraction_mrr`
+- `activation_rate`, `trial_to_paid_rate`, `net_revenue_retention`
+- `feature_a_adoption`, `feature_b_adoption`
+- `event`, `event_category`, `event_description`
+
+See [docs/data_format.md](docs/data_format.md) and [data/sample_upload.csv](data/sample_upload.csv).
+
+## Agentic Features
+
+PulseBoard includes an **AI Analyst Agent** panel. It does a small analysis pass before answering:
+
+- scans weekly KPI deltas,
+- compares segment contribution and revenue risk,
+- checks anomaly/event context,
+- then writes a diagnosis and recommended actions.
+
+With `ANTHROPIC_API_KEY`, Claude synthesizes the final response. Without a key, PulseBoard uses a deterministic offline agent response so the hosted demo still works.
+
 ## Run The ML Pipeline
 
 ```bash
@@ -90,8 +143,13 @@ pulseboard/
 ├── config/
 │   └── settings.py
 ├── data/
+│   ├── sample_upload.csv
+│   ├── ingestion/
+│   │   └── csv_loader.py
 │   └── generators/
 │       └── synthetic_data.py
+├── docs/
+│   └── data_format.md
 ├── ml/
 │   ├── pipeline.py
 │   ├── anomaly_detector.py
@@ -108,6 +166,8 @@ pulseboard/
 │   │   ├── trend_charts.py
 │   │   ├── anomaly_panel.py
 │   │   ├── cohort_heatmap.py
+│   │   ├── agent_panel.py
+│   │   ├── operating_views.py
 │   │   └── insight_feed.py
 │   └── layout.py
 ├── tests/

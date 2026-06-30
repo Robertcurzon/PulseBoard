@@ -36,6 +36,8 @@ class ProphetForecaster:
         history = metrics[["date", metric]].rename(columns={"date": "ds", metric: "y"}).copy()
         history["ds"] = pd.to_datetime(history["ds"])
         history = history.sort_values("ds")
+        if len(history) < 14 or history["y"].nunique() < 2:
+            return self._forecast_with_naive(history, metric, horizon_days)
 
         try:
             return self._forecast_with_prophet(history, metric, horizon_days)
@@ -70,11 +72,14 @@ class ProphetForecaster:
         )
 
     def _forecast_with_statsmodels(self, history: pd.DataFrame, metric: str, horizon_days: int) -> ForecastResult:
-        series = history.set_index("ds")["y"].asfreq("D").interpolate()
-        model = ExponentialSmoothing(series, trend="add", seasonal="add", seasonal_periods=7, initialization_method="estimated")
-        fitted = model.fit(optimized=True)
-        predicted = fitted.forecast(horizon_days)
-        resid_std = float(np.std(fitted.resid.dropna())) or float(series.std() * 0.05)
+        try:
+            series = history.set_index("ds")["y"].asfreq("D").interpolate()
+            model = ExponentialSmoothing(series, trend="add", seasonal="add", seasonal_periods=7, initialization_method="estimated")
+            fitted = model.fit(optimized=True)
+            predicted = fitted.forecast(horizon_days)
+            resid_std = float(np.std(fitted.resid.dropna())) or float(series.std() * 0.05)
+        except Exception:
+            return self._forecast_with_naive(history, metric, horizon_days)
         forecast = pd.DataFrame(
             {
                 "date": predicted.index,
@@ -89,6 +94,31 @@ class ProphetForecaster:
             history=history.rename(columns={"ds": "date", "y": "actual"}),
             forecast=forecast,
             engine="statsmodels",
+        )
+
+    def _forecast_with_naive(self, history: pd.DataFrame, metric: str, horizon_days: int) -> ForecastResult:
+        """Return a robust baseline forecast for short or low-variance uploads."""
+
+        ordered = history.sort_values("ds")
+        last_date = pd.Timestamp(ordered["ds"].max())
+        recent = ordered["y"].tail(min(7, len(ordered)))
+        level = float(recent.mean()) if len(recent) else 0.0
+        resid_std = float(recent.std()) if len(recent) > 1 else abs(level) * 0.05
+        future_dates = pd.date_range(last_date + pd.Timedelta(days=1), periods=horizon_days, freq="D")
+        forecast = pd.DataFrame(
+            {
+                "date": future_dates,
+                "yhat": level,
+                "yhat_lower": level - 1.28 * resid_std,
+                "yhat_upper": level + 1.28 * resid_std,
+                "metric": metric,
+            }
+        )
+        return ForecastResult(
+            metric=metric,
+            history=ordered.rename(columns={"ds": "date", "y": "actual"}),
+            forecast=forecast,
+            engine="naive-baseline",
         )
 
 
