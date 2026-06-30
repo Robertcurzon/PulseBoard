@@ -8,7 +8,7 @@
 
 PulseBoard is an AI-powered Product & Business Analytics Intelligence Dashboard for SaaS metrics. It generates realistic product telemetry, runs forecasting and anomaly detection pipelines, explains churn drivers with SHAP, and turns weekly KPI movement into executive-ready narratives with Claude.
 
-> Demo GIF placeholder: add a short screen recording of the Streamlit dashboard at `docs/pulseboard-demo.gif` after deployment.
+![PulseBoard dashboard screenshot](docs/pulseboard-screenshot.png)
 
 Repository: [github.com/Robertcurzon/PulseBoard](https://github.com/Robertcurzon/PulseBoard)
 
@@ -66,6 +66,8 @@ PulseBoard is built for Streamlit hosting, so the easiest public demo path is:
 4. Add `ANTHROPIC_API_KEY` as an app secret if you want live Claude narratives. Leave it unset for deterministic offline demo text.
 5. Share the generated Streamlit app URL with colleagues.
 
+After deployment, add the live app URL near the top of this README so recruiters and interviewers can open the dashboard directly.
+
 The same repo also works on Render, Railway, Hugging Face Spaces, or any Python web host that can run:
 
 ```bash
@@ -109,6 +111,28 @@ PulseBoard includes an **AI Analyst Agent** panel. It does a small analysis pass
 
 With `ANTHROPIC_API_KEY`, Claude synthesizes the final response. Without a key, PulseBoard uses a deterministic offline agent response so the hosted demo still works.
 
+Good demo prompts:
+
+- "What changed this week, and what should the business do next?"
+- "Which segment is driving revenue risk?"
+- "Are the anomalies explainable by product, GTM, or billing events?"
+- "Where should the team focus to improve conversion?"
+
+## Case Study Walkthrough
+
+**Problem.** SaaS teams often have plenty of metrics but limited time to connect product usage, revenue movement, customer health, and operational incidents into an executive-ready story.
+
+**Approach.** PulseBoard creates a realistic product analytics environment with segment, region, and acquisition-channel slices. It validates either built-in mock data or an uploaded CSV, then applies anomaly detection, forecasting, churn explanation, and LLM-generated narrative layers.
+
+**ML and AI components.**
+
+- Isolation Forest detects unusual KPI movement across engagement, revenue, conversion, retention, and satisfaction metrics.
+- Prophet-first forecasting projects key metrics with uncertainty intervals, with robust fallbacks for short uploaded files.
+- SHAP explains churn model drivers in business-readable terms.
+- The AI Analyst Agent inspects KPI deltas, segment drivers, and anomaly context before producing a diagnosis and recommended actions.
+
+**Business value.** The dashboard helps stakeholders move from "what changed?" to "what should we do next?" It is designed for weekly business reviews, product launch readouts, funnel diagnostics, revenue risk reviews, and interview conversations about how analytics products can combine ML, LLMs, and user-centered design.
+
 ## Run The ML Pipeline
 
 ```bash
@@ -149,7 +173,8 @@ pulseboard/
 │   └── generators/
 │       └── synthetic_data.py
 ├── docs/
-│   └── data_format.md
+│   ├── data_format.md
+│   └── pulseboard-screenshot.png
 ├── ml/
 │   ├── pipeline.py
 │   ├── anomaly_detector.py
@@ -158,6 +183,7 @@ pulseboard/
 ├── llm/
 │   ├── insight_generator.py
 │   ├── anomaly_narrator.py
+│   ├── analyst_agent.py
 │   └── prompt_templates.py
 ├── dashboard/
 │   ├── app.py
@@ -173,6 +199,8 @@ pulseboard/
 ├── tests/
 │   ├── test_pipeline.py
 │   ├── test_anomaly_detector.py
+│   ├── test_csv_loader.py
+│   ├── test_dashboard_app.py
 │   └── test_insight_generator.py
 └── scripts/
     └── run_pipeline.py

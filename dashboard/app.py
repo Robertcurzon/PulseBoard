@@ -85,12 +85,42 @@ def filter_segments(segment_metrics: pd.DataFrame, segments: list[str], regions:
     ].copy()
 
 
+def render_upload_waiting_state() -> None:
+    """Render a no-data state for upload mode before a CSV is supplied."""
+
+    render_header()
+    st.info("Upload a CSV file from the sidebar to run PulseBoard on your own data.")
+    with st.expander("Required CSV format", expanded=True):
+        st.markdown(
+            """
+            **Minimum required columns**
+
+            - `date`
+            - At least one KPI: `dau`, `mrr`, `new_signups`, `churn_rate`, or `nps`
+
+            **Recommended columns**
+
+            - Dimensions: `segment`, `region`, `acquisition_channel`
+            - Operating metrics: `pipeline_created`, `pipeline_won`, `trial_to_paid_rate`, `net_revenue_retention`
+            - Event context: `event`, `event_category`, `event_description`
+            """
+        )
+    sample_path = PROJECT_ROOT / "data" / "sample_upload.csv"
+    if sample_path.exists():
+        st.download_button(
+            "Download sample CSV",
+            data=sample_path.read_bytes(),
+            file_name="pulseboard_sample_upload.csv",
+            mime="text/csv",
+        )
+    st.stop()
+
+
 def main() -> None:
     """Render the PulseBoard application."""
 
     configure_page()
     settings = get_settings()
-    bootstrap = cached_pipeline(settings.anomaly_contamination)
     st.sidebar.header("Data Source")
     data_source = st.sidebar.radio("Choose dataset", ["Showcase mock data", "Upload CSV"], horizontal=False)
     uploaded_data: UploadedDataset | None = None
@@ -110,7 +140,11 @@ def main() -> None:
                     st.sidebar.caption(message)
             except Exception as exc:
                 st.sidebar.error(f"Could not load CSV: {exc}")
+                render_upload_waiting_state()
+        else:
+            render_upload_waiting_state()
 
+    bootstrap = cached_pipeline(settings.anomaly_contamination)
     active_daily = uploaded_data.daily_metrics if uploaded_data else bootstrap["daily_metrics"]
     active_segments = uploaded_data.segment_metrics if uploaded_data else bootstrap["segment_metrics"]
     date_range, selected_metric, sensitivity, selected_segments, selected_regions, selected_channels = sidebar_filters(
